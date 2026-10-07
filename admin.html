@@ -458,11 +458,103 @@
     const $ = id => document.getElementById(id);
     function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
     function authHeaders(extra = {}) { return token ? { ...extra, Authorization: 'Bearer ' + token } : extra }
-    async function api(path, options = {}) { const r = await fetch(API + path, { ...options, headers: authHeaders({ 'Content-Type': 'application/json', ...(options.headers || {}) }) }); if (r.status === 401) { logout(); throw new Error('Session expired. Please sign in again.') } const text = await r.text(); let data = null; try { data = text ? JSON.parse(text) : null } catch { } if (!r.ok) throw new Error(data?.error || text || ('Request failed: ' + r.status)); return data }
+    const DEMO_STORE = {
+      about: { fullName: "Parthasarathi Bala", title: "B.Tech Student & Developer", email: "parthasarathibala44@gmail.com", phone: "+91 7847891945", location: "Bhubaneswar, India", githubUrl: "https://github.com/Partha2005-abi", education: "B.Tech", cgpa: 7.6, bio: "Student and developer working with Java, Spring Boot, REST APIs, and databases." },
+      skills: [
+        { id: 1, name: "Java", category: "Backend", proficiency: 85, displayOrder: 1 },
+        { id: 2, name: "Spring Boot", category: "Backend", proficiency: 80, displayOrder: 2 },
+        { id: 3, name: "REST API", category: "Backend", proficiency: 85, displayOrder: 3 },
+        { id: 4, name: "HTML / CSS", category: "Frontend", proficiency: 90, displayOrder: 4 }
+      ],
+      projects: [
+        { id: 1, title: "Portfolio & CMS Admin Panel", description: "Full-stack portfolio site with custom Spring Boot admin panel and JWT authentication.", technologies: "Java, Spring Boot, JS, HTML, CSS", githubUrl: "https://github.com/Partha2005-abi/Portfolio", published: true, featured: true }
+      ],
+      blogs: [
+        { id: 1, title: "Building a Custom Spring Boot CMS", slug: "spring-boot-cms", summary: "How I built a lightweight CMS for my developer portfolio using Java 17 and Spring Security.", content: "Full breakdown of building REST APIs...", published: true }
+      ],
+      experience: [
+        { id: 1, company: "SOA University", role: "B.Tech Computer Science Student", startDate: "2024", endDate: "2028", description: "Learning software development, algorithms, and web technologies." }
+      ],
+      testimonials: [
+        { id: 1, name: "Project Reviewer", designation: "Lead Developer", message: "Great work on the full-stack architecture and clean administrative UI." }
+      ],
+      services: [
+        { id: 1, title: "Web Development", icon: "⚡", description: "Building modern, dynamic web applications with Java backends." }
+      ],
+      messages: [
+        { id: 1, name: "John Doe", email: "john@example.com", subject: "Collaboration Opportunity", message: "Hi Parthasarathi, loved your portfolio!", createdAt: "2026-10-08", seen: false }
+      ],
+      media: []
+    };
+
+    function handleDemoApi(path, options = {}) {
+      const parts = path.replace('/api/', '').split('/');
+      const key = parts[0];
+      let store = JSON.parse(localStorage.getItem('demo_db_' + key) || 'null');
+      if (!store) { store = DEMO_STORE[key] ?? []; localStorage.setItem('demo_db_' + key, JSON.stringify(store)); }
+      const method = options.method || 'GET';
+      if (method === 'GET') {
+        if (parts[1]) { const id = Number(parts[1]); return (Array.isArray(store) ? store.find(x => x.id === id) : store) || {}; }
+        return store;
+      }
+      const body = options.body ? JSON.parse(options.body) : {};
+      if (method === 'POST') {
+        if (Array.isArray(store)) { body.id = Date.now(); store.push(body); } else Object.assign(store, body);
+        localStorage.setItem('demo_db_' + key, JSON.stringify(store));
+        return body;
+      }
+      if (method === 'PUT') {
+        if (Array.isArray(store)) { const idx = store.findIndex(x => x.id == parts[1]); if (idx !== -1) Object.assign(store[idx], body); } else Object.assign(store, body);
+        localStorage.setItem('demo_db_' + key, JSON.stringify(store));
+        return body;
+      }
+      if (method === 'DELETE') {
+        if (Array.isArray(store)) { store = store.filter(x => x.id != parts[1]); localStorage.setItem('demo_db_' + key, JSON.stringify(store)); }
+        return { success: true };
+      }
+      return store;
+    }
+
+    async function api(path, options = {}) {
+      if (token === 'demo-token') return handleDemoApi(path, options);
+      try {
+        const r = await fetch(API + path, { ...options, headers: authHeaders({ 'Content-Type': 'application/json', ...(options.headers || {}) }) });
+        if (r.status === 401) { logout(); throw new Error('Session expired. Please sign in again.') }
+        const text = await r.text(); let data = null; try { data = text ? JSON.parse(text) : null } catch { }
+        if (!r.ok) throw new Error(data?.error || text || ('Request failed: ' + r.status));
+        return data;
+      } catch (err) {
+        if (token === 'demo-token' || location.hostname.includes('vercel.app')) return handleDemoApi(path, options);
+        throw err;
+      }
+    }
     function buildNav() { $('nav').innerHTML = navItems.map(([k, l]) => `<button class="${k === current ? 'active' : ''}" onclick="go('${k}')">${l}</button>`).join(''); }
     function go(key) { current = key; buildNav(); $('pageTitle').textContent = navItems.find(x => x[0] === key)?.[1] || 'Dashboard'; if (key === 'dashboard') renderDashboard(); else if (key === 'messages') renderMessages(); else if (key === 'media') renderMedia(); else renderModule(key); }
     async function init() { if (!token) { $('loginView').classList.remove('hidden'); return } $('currentUser').textContent = username || 'admin'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); buildNav(); await renderDashboard(); }
-    $('loginForm').onsubmit = async e => { e.preventDefault(); $('loginStatus').textContent = 'Signing in…'; $('loginStatus').className = 'status'; try { const d = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ username: $('username').value.trim(), password: $('password').value }) }); token = d.token; username = d.username || $('username').value.trim(); localStorage.setItem('portfolio_admin_token', token); localStorage.setItem('portfolio_admin_user', username); $('currentUser').textContent = username; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); buildNav(); await renderDashboard() } catch (err) { $('loginStatus').textContent = err.message; $('loginStatus').className = 'status error' } };
+    $('loginForm').onsubmit = async e => {
+      e.preventDefault();
+      const u = $('username').value.trim();
+      const p = $('password').value;
+      $('loginStatus').textContent = 'Signing in…';
+      $('loginStatus').className = 'status';
+      try {
+        const d = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ username: u, password: p }) });
+        token = d.token; username = d.username || u;
+      } catch (err) {
+        if ((u === 'admin' && p === 'admin123') || location.hostname.includes('vercel.app')) {
+          token = 'demo-token'; username = u + ' (Demo Mode)';
+        } else {
+          $('loginStatus').textContent = err.message; $('loginStatus').className = 'status error'; return;
+        }
+      }
+      localStorage.setItem('portfolio_admin_token', token);
+      localStorage.setItem('portfolio_admin_user', username);
+      $('currentUser').textContent = username;
+      $('loginView').classList.add('hidden');
+      $('appView').classList.remove('hidden');
+      buildNav();
+      await renderDashboard();
+    };
     function logout() { token = ''; username = ''; localStorage.removeItem('portfolio_admin_token'); localStorage.removeItem('portfolio_admin_user'); $('appView').classList.add('hidden'); $('loginView').classList.remove('hidden'); $('password').value = ''; }
     $('logout').onclick = logout;
     async function renderDashboard() {
