@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel — Parthasarathi Bala</title>
+  <style>
+    :root {
+      --bg: #0b1120;
+      --panel: #111a2e;
+      --panel2: #16213a;
+      --line: #26335a;
+      --text: #eaf0ff;
+      --muted: #9aa6c6;
+      --accent: #7b9bff;
+      --danger: #ff6b7a;
+      --ok: #64d6a3
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif
+    }
+
+    button,
+    input,
+    textarea,
+    select {
+      font: inherit
+    }
+
+    button {
+      cursor: pointer
+    }
+
+    .hidden {
+      display: none !important
+    }
+
+    .login {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      background: radial-gradient(circle at top right, #1d2d55 0, transparent 45%), var(--bg)
+    }
+
+    .login-card {
+      width: min(430px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 34px;
+      box-shadow: 0 24px 80px #0006
+    }
+
+    .brand {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px
+    }
+
+    .sub {
+      color: var(--muted);
+      margin-bottom: 28px
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 14px;
+      margin: 18px 0 7px
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      background: #0c1426;
+      color: var(--text);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 12px 14px;
+      outline: none
+    }
+
+    input:focus,
+    textarea:focus,
+    select:focus {
+      border-color: var(--accent)
+    }
+
+    textarea {
+      min-height: 110px;
+      resize: vertical
+    }
+
+    .btn {
+      border: 1px solid var(--line);
+      background: var(--panel2);
+      color: var(--text);
+      padding: 10px 15px;
+      border-radius: 10px
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff
+    }
+
+    .btn.danger {
+      color: #fff;
+      background: #8b2635;
+      border-color: #a63849
+    }
+
+    .btn.small {
+      padding: 7px 10px;
+      font-size: 13px
+    }
+
+    .status {
+      margin-top: 14px;
+      color: var(--muted);
+      min-height: 22px
+    }
+
+    .status.error {
+      color: var(--danger)
+    }
+
+    .status.ok {
+      color: var(--ok)
+    }
+
+    .app {
+      display: flex;
+      min-height: 100vh
+    }
+
+    .sidebar {
+      width: 245px;
+      background: #0d1528;
+      border-right: 1px solid var(--line);
+      padding: 22px 14px;
+      position: fixed;
+      inset: 0 auto 0 0
+    }
+
+    .side-title {
+      font-weight: 700;
+      font-size: 20px;
+      padding: 10px 12px 22px
+    }
+
+    .nav {
+      display: grid;
+      gap: 6px
+    }
+
+    .nav button {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      text-align: left;
+      padding: 11px 12px;
+      border-radius: 10px
+    }
+
+    .nav button:hover,
+    .nav button.active {
+      background: var(--panel2);
+      color: var(--text)
+    }
+
+    .logout {
+      position: absolute;
+      left: 14px;
+      right: 14px;
+      bottom: 18px
+    }
+
+    .main {
+      margin-left: 245px;
+      width: calc(100% - 245px);
+      padding: 30px
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 28px
+    }
+
+    .topbar h1 {
+      margin: 0;
+      font-size: 30px
+    }
+
+    .user {
+      color: var(--muted);
+      font-size: 14px
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 15px;
+      margin-bottom: 28px
+    }
+
+    .stat {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px
+    }
+
+    .stat b {
+      display: block;
+      font-size: 30px;
+      color: var(--accent)
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 14px
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 22px
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 21px
+    }
+
+    .table-wrap {
+      overflow: auto
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 680px
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 13px
+    }
+
+    td {
+      font-size: 14px
+    }
+
+    .actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 25px 0
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 9px;
+      margin-top: 20px
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: #0009;
+      display: grid;
+      place-items: center;
+      padding: 20px;
+      z-index: 10
+    }
+
+    .modal-card {
+      width: min(760px, 100%);
+      max-height: 90vh;
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .modal-head h2 {
+      margin: 0
+    }
+
+    .close {
+      border: 0;
+      background: transparent;
+      color: var(--muted);
+      font-size: 25px
+    }
+
+    .help {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 5px
+    }
+
+    .upload-box {
+      border: 1px dashed var(--line);
+      border-radius: 14px;
+      padding: 20px
+    }
+
+    .media-url {
+      word-break: break-all;
+      color: var(--accent)
+    }
+
+    @media(max-width:800px) {
+      .sidebar {
+        position: static;
+        width: 100%;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line)
+      }
+
+      .app {
+        display: block
+      }
+
+      .nav {
+        display: flex;
+        overflow: auto
+      }
+
+      .logout {
+        position: static;
+        margin-top: 12px
+      }
+
+      .main {
+        margin-left: 0;
+        width: 100%;
+        padding: 20px
+      }
+
+      .grid2 {
+        grid-template-columns: 1fr
+      }
+
+      .side-title {
+        padding-bottom: 12px
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="loginView" class="login">
+    <div class="login-card">
+      <div class="brand">Parthasarathi CMS</div>
+      <div class="sub">Sign in to manage your portfolio.</div>
+      <form id="loginForm">
+        <label>Username</label><input id="username" autocomplete="username" required>
+        <label>Password</label><input id="password" type="password" autocomplete="current-password" required>
+        <button class="btn primary" style="width:100%;margin-top:22px">Sign in</button>
+      </form>
+      <div id="loginStatus" class="status"></div>
+    </div>
+  </div>
+
+  <div id="appView" class="app hidden">
+    <aside class="sidebar">
+      <div class="side-title">⚡ Portfolio CMS</div>
+      <div id="nav" class="nav"></div>
+      <a href="../../../../portfolio-redesign-index.html" id="portfolioLink" class="btn" style="display:block;text-align:center;text-decoration:none;margin-bottom:8px;color:var(--accent);border-color:var(--accent)">← View Portfolio</a>
+      <button id="logout" class="btn logout">Logout</button>
+    </aside>
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <div class="user">Signed in as <span id="currentUser"></span></div>
+        </div><a class="btn" href="/" target="_blank">View portfolio ↗</a>
+      </div>
+      <div id="content"></div>
+    </main>
+  </div>
+
+  <div id="modal" class="modal hidden">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="modalTitle">Edit</h2><button class="close" onclick="closeModal()">×</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+
+  <script>
+    const API = '';
+    const schemas = {
+      about: { label: 'About', single: true, fields: [['fullName', 'Full name', 'text'], ['title', 'Title', 'text'], ['email', 'Email', 'email'], ['phone', 'Phone', 'text'], ['location', 'Location', 'text'], ['githubUrl', 'GitHub URL', 'url'], ['linkedinUrl', 'LinkedIn URL', 'url'], ['imageUrl', 'Profile image URL', 'url'], ['resumeUrl', 'Resume URL', 'url'], ['education', 'Education', 'text'], ['cgpa', 'CGPA', 'number'], ['bio', 'Bio', 'textarea']] },
+      skills: { label: 'Skills', fields: [['name', 'Name', 'text'], ['category', 'Category', 'text'], ['proficiency', 'Proficiency %', 'number'], ['displayOrder', 'Display order', 'number']] },
+      projects: { label: 'Projects', fields: [['title', 'Title', 'text'], ['imageUrl', 'Image URL', 'url'], ['githubUrl', 'GitHub URL', 'url'], ['liveUrl', 'Live URL', 'url'], ['technologies', 'Technologies (comma separated)', 'text'], ['description', 'Description', 'textarea'], ['featured', 'Featured', 'checkbox'], ['published', 'Published', 'checkbox'], ['displayOrder', 'Display order', 'number']] },
+      blogs: { label: 'Blogs', fields: [['title', 'Title', 'text'], ['slug', 'Slug', 'text'], ['coverImage', 'Cover image URL', 'url'], ['summary', 'Summary', 'textarea'], ['content', 'Content', 'textarea'], ['published', 'Published', 'checkbox']] },
+      experience: { label: 'Experience', fields: [['company', 'Company', 'text'], ['role', 'Role', 'text'], ['startDate', 'Start date', 'text'], ['endDate', 'End date', 'text'], ['logoUrl', 'Logo URL', 'url'], ['description', 'Description', 'textarea'], ['displayOrder', 'Display order', 'number']] },
+      testimonials: { label: 'Testimonials', fields: [['name', 'Name', 'text'], ['designation', 'Designation', 'text'], ['photoUrl', 'Photo URL', 'url'], ['message', 'Message', 'textarea']] },
+      services: { label: 'Services', fields: [['title', 'Title', 'text'], ['icon', 'Icon', 'text'], ['description', 'Description', 'textarea']] }
+    };
+    const navItems = [['dashboard', 'Dashboard'], ...Object.entries(schemas).map(([k, v]) => [k, v.label]), ['messages', 'Messages'], ['media', 'Media']];
+    let token = localStorage.getItem('portfolio_admin_token') || ''; let username = localStorage.getItem('portfolio_admin_user') || ''; let current = 'dashboard'; let rows = [];
+    const $ = id => document.getElementById(id);
+    function esc(v) { return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
+    function authHeaders(extra = {}) { return token ? { ...extra, Authorization: 'Bearer ' + token } : extra }
+    async function api(path, options = {}) { const r = await fetch(API + path, { ...options, headers: authHeaders({ 'Content-Type': 'application/json', ...(options.headers || {}) }) }); if (r.status === 401) { logout(); throw new Error('Session expired. Please sign in again.') } const text = await r.text(); let data = null; try { data = text ? JSON.parse(text) : null } catch { } if (!r.ok) throw new Error(data?.error || text || ('Request failed: ' + r.status)); return data }
+    function buildNav() { $('nav').innerHTML = navItems.map(([k, l]) => `<button class="${k === current ? 'active' : ''}" onclick="go('${k}')">${l}</button>`).join(''); }
+    function go(key) { current = key; buildNav(); $('pageTitle').textContent = navItems.find(x => x[0] === key)?.[1] || 'Dashboard'; if (key === 'dashboard') renderDashboard(); else if (key === 'messages') renderMessages(); else if (key === 'media') renderMedia(); else renderModule(key); }
+    async function init() { if (!token) { $('loginView').classList.remove('hidden'); return } $('currentUser').textContent = username || 'admin'; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); buildNav(); await renderDashboard(); }
+    $('loginForm').onsubmit = async e => { e.preventDefault(); $('loginStatus').textContent = 'Signing in…'; $('loginStatus').className = 'status'; try { const d = await api('/api/auth/login', { method: 'POST', body: JSON.stringify({ username: $('username').value.trim(), password: $('password').value }) }); token = d.token; username = d.username || $('username').value.trim(); localStorage.setItem('portfolio_admin_token', token); localStorage.setItem('portfolio_admin_user', username); $('currentUser').textContent = username; $('loginView').classList.add('hidden'); $('appView').classList.remove('hidden'); buildNav(); await renderDashboard() } catch (err) { $('loginStatus').textContent = err.message; $('loginStatus').className = 'status error' } };
+    function logout() { token = ''; username = ''; localStorage.removeItem('portfolio_admin_token'); localStorage.removeItem('portfolio_admin_user'); $('appView').classList.add('hidden'); $('loginView').classList.remove('hidden'); $('password').value = ''; }
+    $('logout').onclick = logout;
+    async function renderDashboard() {
+      $('content').innerHTML = '<div class="cards" id="stats"><div class="stat"><b>…</b><span>Loading</span></div></div><div class="panel"><div class="panel-head"><h2>Welcome back 👋</h2></div><p style="color:var(--muted)">Manage your portfolio content from one place. Changes made here are saved through the Spring Boot REST API.</p></div>';
+      const entries = Object.entries(schemas); const counts = await Promise.all(entries.map(async ([k, s]) => { try { const d = await api('/api/' + k); return [s.label, s.single ? (d?.id ? 1 : 0) : Array.isArray(d) ? d.length : 0] } catch { return [s.label, '—'] } }));
+      let msg = '—'; try { const m = await api('/api/messages'); msg = m.length } catch { }
+      $('stats').innerHTML = [...counts, ['Messages', msg]].map(([l, n]) => `<div class="stat"><b>${esc(n)}</b><span>${esc(l)}</span></div>`).join('');
+    }
+    async function renderModule(key) { const s = schemas[key]; $('content').innerHTML = '<div class="panel">Loading…</div>'; try { rows = s.single ? await api('/api/about') : await api('/api/' + key); if (!s.single && !Array.isArray(rows)) rows = []; if (s.single && rows && !Array.isArray(rows)) rows = [rows]; renderModuleTable(key) } catch (err) { $('content').innerHTML = `<div class="panel"><div class="status error">${esc(err.message)}</div></div>` } }
+    function renderModuleTable(key) { const s = schemas[key]; const data = rows; let list = s.single ? (data.length ? data : []) : data; let head = s.fields.slice(0, 4).map(f => `<th>${esc(f[1])}</th>`).join(''); let body = list.map(r => `<tr>${s.fields.slice(0, 4).map(f => `<td>${esc(typeof r[f[0]] === 'boolean' ? (r[f[0]] ? 'Yes' : 'No') : r[f[0]])}</td>`).join('')}<td><div class="actions"><button class="btn small" onclick="editItem('${key}',${r.id})">Edit</button>${!s.single ? `<button class="btn small danger" onclick="deleteItem('${key}',${r.id})">Delete</button>` : ''}</div></td></tr>`).join(''); $('content').innerHTML = `<div class="panel"><div class="panel-head"><h2>${esc(s.label)}</h2><button class="btn primary" onclick="editItem('${key}',null)">${s.single ? 'Edit content' : 'Add ' + esc(s.label.slice(0, -1) || s.label)}</button></div><div class="table-wrap">${body ? `<table><thead><tr>${head}<th>Actions</th></tr></thead><tbody>${body}</tbody></table>` : '<div class="empty">No content yet.</div>'}</div></div>` }
+    async function editItem(key, id) { const s = schemas[key]; let item = {}; if (id) { item = await api(s.single ? '/api/about' : `/api/${key}/${id}`) } else if (s.single) { item = await api('/api/about').catch(() => ({})) } $('modalTitle').textContent = (id ? 'Edit ' : 'Add ') + s.label; $('modalBody').innerHTML = `<form id="itemForm">${s.fields.map(([name, label, type]) => type === 'checkbox' ? `<label style="display:flex;gap:9px;align-items:center;color:var(--text)"><input style="width:auto" type="checkbox" id="f_${name}" ${item[name] ? 'checked' : ''}> ${esc(label)}</label>` : `<label>${esc(label)}<${type === 'textarea' ? 'textarea' : 'input'} id="f_${name}" type="${type === 'textarea' ? '' : type}" ${type === 'number' ? 'step="any"' : ''}>${type === 'textarea' ? esc(item[name] ?? '') : ''}</${type === 'textarea' ? 'textarea' : 'input'}></label>`).join('')}<div class="form-actions"><button class="btn primary">Save</button><button type="button" class="btn" onclick="closeModal()">Cancel</button></div><div id="formStatus" class="status"></div></form>`; $('modal').classList.remove('hidden'); $('itemForm').onsubmit = async e => { e.preventDefault(); const payload = {}; for (const [name, label, type] of s.fields) { const el = $('f_' + name); if (type === 'checkbox') payload[name] = el.checked; else if (type === 'number') payload[name] = el.value === '' ? null : Number(el.value); else payload[name] = el.value } try { if (s.single) await api('/api/about', { method: 'PUT', body: JSON.stringify(payload) }); else if (id) await api(`/api/${key}/${id}`, { method: 'PUT', body: JSON.stringify(payload) }); else await api(`/api/${key}`, { method: 'POST', body: JSON.stringify(payload) }); closeModal(); await renderModule(key) } catch (err) { $('formStatus').textContent = err.message; $('formStatus').className = 'status error' } } }
+    async function deleteItem(key, id) { if (!confirm('Delete this item? This cannot be undone.')) return; try { await api(`/api/${key}/${id}`, { method: 'DELETE' }); await renderModule(key) } catch (err) { alert(err.message) } }
+    async function renderMessages() { $('content').innerHTML = '<div class="panel">Loading…</div>'; try { const list = await api('/api/messages'); $('content').innerHTML = `<div class="panel"><div class="panel-head"><h2>Contact messages</h2></div><div class="table-wrap">${list.length ? `<table><thead><tr><th>From</th><th>Subject</th><th>Message</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead><tbody>${list.map(m => `<tr><td><b>${esc(m.name)}</b><br><span style="color:var(--muted)">${esc(m.email)}</span></td><td>${esc(m.subject)}</td><td>${esc(m.message)}</td><td>${esc(m.createdAt)}</td><td>${m.seen ? 'Seen' : 'New'}</td><td><button class="btn small" onclick="markMessage(${m.id},${!m.seen})">${m.seen ? 'Mark new' : 'Mark seen'}</button></td></tr>`).join('')}</tbody></table>` : '<div class="empty">No messages yet.</div>'}</div></div>` } catch (err) { $('content').innerHTML = `<div class="panel"><div class="status error">${esc(err.message)}</div></div>` } }
+    async function markMessage(id, seen) { try { const m = await api('/api/messages/' + id); m.seen = seen; await api('/api/messages/' + id, { method: 'PUT', body: JSON.stringify(m) }); await renderMessages() } catch (err) { alert(err.message) } }
+    async function renderMedia() { let list = []; try { list = await api('/api/media') } catch (err) { } $('content').innerHTML = `<div class="panel"><div class="panel-head"><h2>Media</h2></div><div class="upload-box"><label>Select image</label><input id="mediaFile" type="file" accept="image/png,image/jpeg,image/gif,image/webp"><div class="help">JPG, PNG, GIF or WEBP · max 5MB</div><button class="btn primary" style="margin-top:15px" onclick="uploadMedia()">Upload image</button><div id="uploadStatus" class="status"></div></div><div style="height:20px"></div><div class="table-wrap">${list.length ? `<table><thead><tr><th>File</th><th>URL</th><th>Type</th><th>Size</th><th>Actions</th></tr></thead><tbody>${list.map(m => `<tr><td>${esc(m.fileName)}</td><td><a class="media-url" href="${esc(m.url)}" target="_blank">${esc(m.url)}</a></td><td>${esc(m.contentType)}</td><td>${esc(m.sizeBytes)} bytes</td><td><button class="btn small danger" onclick="deleteMedia(${m.id})">Delete</button></td></tr>`).join('')}</tbody></table>` : '<div class="empty">No media uploaded yet.</div>'}</div></div>` }
+    async function uploadMedia() { const f = $('mediaFile').files[0]; if (!f) { $('uploadStatus').textContent = 'Choose an image first.'; return } const fd = new FormData(); fd.append('file', f); $('uploadStatus').textContent = 'Uploading…'; try { const r = await fetch('/api/upload/image', { method: 'POST', headers: { Authorization: 'Bearer ' + token }, body: fd }); const d = await r.json(); if (!r.ok) throw new Error(d.error || 'Upload failed'); $('uploadStatus').textContent = 'Uploaded: ' + d.url; $('uploadStatus').className = 'status ok'; await renderMedia() } catch (err) { $('uploadStatus').textContent = err.message; $('uploadStatus').className = 'status error' } }
+    async function deleteMedia(id) { if (!confirm('Delete this media record?')) return; try { await api('/api/media/' + id, { method: 'DELETE' }); await renderMedia() } catch (err) { alert(err.message) } }
+    function closeModal() { $('modal').classList.add('hidden') }
+    init();
+    // Fix portfolio link when served by Spring Boot
+    (function(){const pl=document.getElementById('portfolioLink');if(pl&&location.protocol!=='file:'){pl.href='/portfolio-redesign-index.html'}})();
+  </script>
+</body>
+
+</html>
