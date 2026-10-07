@@ -44,12 +44,33 @@ $('menu').onclick=()=>$('navlinks').classList.toggle('open'); document.querySele
 async function get(path){try{const r=await fetch(path);if(!r.ok)throw 0;return await r.json()}catch(e){return null}}
 function empty(text='Nothing added yet.'){return `<div class="empty">${esc(text)}</div>`}
 function link(url,label){return url?`<a href="${esc(url)}" target="_blank" rel="noopener">${esc(label)}</a>`:''}
+const DEFAULT_ABOUT = { fullName: "Parthasarathi Bala", title: "B.Tech Student & Software Developer", bio: "Third-year B.Tech student at Siksha 'O' Anusandhan University. Passionate about Java, Spring Boot, REST APIs, databases, and building full-stack web applications.", cgpa: "7.6", education: "B.Tech", location: "Bhubaneswar, Odisha", email: "parthasarathibala44@gmail.com", githubUrl: "https://github.com/Partha2005-abi" };
+const DEFAULT_SKILLS = [
+  { name: "Java", category: "Backend", proficiency: 85 },
+  { name: "Spring Boot", category: "Backend", proficiency: 80 },
+  { name: "REST APIs", category: "Backend", proficiency: 85 },
+  { name: "Python", category: "Languages", proficiency: 75 },
+  { name: "C", category: "Languages", proficiency: 70 },
+  { name: "HTML / CSS", category: "Frontend", proficiency: 90 },
+  { name: "JavaScript", category: "Frontend", proficiency: 80 },
+  { name: "PostgreSQL / SQL", category: "Database", proficiency: 75 }
+];
+const DEFAULT_PROJECTS = [
+  { title: "Portfolio with Custom CMS", description: "Full-stack portfolio & CMS admin panel built with Spring Boot, JWT Auth, and modern UI.", technologies: "Java, Spring Boot, REST API, HTML/CSS, JS", githubUrl: "https://github.com/Partha2005-abi/Portfolio", published: true }
+];
+
 async function load(){
- const about=await get('/api/about');
+ const about = (await get('/api/about')) || DEFAULT_ABOUT;
  if(about){const name=about.fullName||'Parthasarathi Bala';$('heroName').textContent=name.split(' ')[0];$('initials').textContent=name.split(' ').map(x=>x[0]).slice(0,2).join('').toUpperCase();$('heroTitle').textContent=about.title||'B.Tech student and developer building useful software.';$('aboutText').textContent=about.bio||'B.Tech student and developer focused on building useful software.';$('cgpa').textContent=about.cgpa??'—';$('education').textContent=about.education||'B.Tech';$('location').textContent=about.location||'—';$('contactLocation').textContent=about.location||'—';$('email').textContent=about.email||'—';$('phone').textContent=about.phone||'—';$('socials').innerHTML=[link(about.githubUrl,'GitHub'),link(about.linkedinUrl,'LinkedIn'),link(about.resumeUrl,'Resume')].filter(Boolean).join(' · ')}
- const skills=await get('/api/skills');
+ 
+ let skills = await get('/api/skills');
+ if(!skills || !skills.length) skills = DEFAULT_SKILLS;
  $('skillsBox').innerHTML=skills?.length?Object.entries(skills.reduce((a,s)=>{(a[s.category||'Skills']??=[]).push(s);return a},{})).map(([cat,arr])=>`<div class="skill-card"><h3>${esc(cat)}</h3>${arr.map(s=>`<div class="skill"><div class="skill-row"><span>${esc(s.name)}</span><span>${s.proficiency??0}%</span></div><div class="bar"><i style="width:${Math.max(0,Math.min(100,s.proficiency??0))}%"></i></div></div>`).join('')}</div>`).join(''):empty();
- const projects=await get('/api/projects');$('projectsBox').innerHTML=projects?.length?projects.filter(p=>p.published!==false).map(p=>`<article class="item-card project"><h3>${esc(p.title)}</h3><p>${esc(p.description||'')}</p><div class="tags">${esc(p.technologies||'').split(',').filter(Boolean).map(x=>`<span class="tag">${esc(x.trim())}</span>`).join('')}</div><div class="links">${link(p.githubUrl,'GitHub')}${link(p.liveUrl,'Live demo')}</div></article>`).join(''):empty('Add your projects from Admin.');
+ 
+ let projects = await get('/api/projects');
+ if(!projects || !projects.length) projects = DEFAULT_PROJECTS;
+ $('projectsBox').innerHTML=projects?.length?projects.filter(p=>p.published!==false).map(p=>`<article class="item-card project"><h3>${esc(p.title)}</h3><p>${esc(p.description||'')}</p><div class="tags">${esc(p.technologies||'').split(',').filter(Boolean).map(x=>`<span class="tag">${esc(x.trim())}</span>`).join('')}</div><div class="links">${link(p.githubUrl,'GitHub')}${link(p.liveUrl,'Live demo')}</div></article>`).join(''):empty('Add your projects from Admin.');
+ 
  const exp=await get('/api/experience');$('experienceBox').innerHTML=exp?.length?exp.sort((a,b)=>(a.displayOrder??0)-(b.displayOrder??0)).map(x=>`<div class="timeline-item"><span class="dot"></span><small>${esc(x.startDate||'')} ${x.endDate?'— '+esc(x.endDate):''}</small><h3>${esc(x.role||'')}</h3><strong>${esc(x.company||'')}</strong><p>${esc(x.description||'')}</p></div>`).join(''):empty('Add your experience from Admin.');
  const blogs=await get('/api/blogs');$('blogsBox').innerHTML=blogs?.filter(b=>b.published!==false).length?blogs.filter(b=>b.published!==false).map(b=>`<article class="item-card"><h3>${esc(b.title)}</h3><p>${esc(b.summary||'')}</p><small>${b.createdAt?new Date(b.createdAt).toLocaleDateString():''}</small></article>`).join(''):empty('Publish your first blog from Admin.');
  const services=await get('/api/services');$('servicesBox').innerHTML=services?.length?services.map(s=>`<div class="item-card"><h3>${esc(s.icon||'✦')} ${esc(s.title)}</h3><p>${esc(s.description||'')}</p></div>`).join(''):empty('Add services from Admin.');
